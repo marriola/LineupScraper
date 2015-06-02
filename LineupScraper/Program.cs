@@ -40,9 +40,9 @@ namespace LineupScraper
          * @param node  HTML node containing links to band pages.
          * @return      The selected band page.
          */
-        static HtmlNode PickBand(HtmlNode node)
+        static HtmlNode PickBand(HtmlNode disambiguation)
         {
-            HtmlNodeCollection bandList = node.Element("ul").SelectNodes("descendant::li");
+            HtmlNodeCollection bandList = disambiguation.Element("ul").SelectNodes("descendant::li");
             int i = 1;
             foreach (HtmlNode band in bandList)
             {
@@ -93,23 +93,42 @@ namespace LineupScraper
 
             // Retrieve the band page and check whether this is a disambiguation page.
             HtmlNode root = LoadPage("http://www.metal-archives.com/bands/" + bandName);
-            HtmlNodeCollection collection = root.SelectNodes("//div[@id='content_wrapper']");
-            if (collection.Count == 0)
+            HtmlNode content = root.SelectSingleNode("//div[@id='content_wrapper']");
+            if (content == null)
             {
                 throw new Exception("Missing content_wrapper div.");
             }
-            else if (collection[0].InnerText.Contains("\"" + bandName + "\" may refer to:"))
+            else if (content.InnerText.Contains("\"" + bandName + "\" may refer to:"))
             {
-                root = PickBand(collection[0]);
+                root = PickBand(content);
             }
 
             return root;
         }
 
+        static HtmlNodeCollection GetBandMembers(HtmlNode bandPage)
+        {
+            HtmlNode bandMembersTab = bandPage.SelectSingleNode("//div[@id='band_tab_members_all']");
+            if (bandMembersTab == null)
+            {
+                throw new Exception("Missing band_tab_members_all div.");
+            }
+            
+            HtmlNodeCollection bandMembers = bandMembersTab.SelectNodes("descendant::tr[@class='lineupRow']");
+            foreach (HtmlNode member in bandMembers)
+            {
+                HtmlNodeCollection columns = member.SelectNodes("descendant::td");
+                string memberName = columns[0].Element("a").InnerText;
+                string memberRole = columns[1].InnerText.Trim().Replace("&nbsp;", " ");
+                Console.WriteLine("{0}\t{1}", memberName, memberRole);
+            }
+            return null;
+        }
+
         static void Main(string[] args)
         {
-            HtmlNode doc = GetBandPage(args);
-            Console.WriteLine(doc.InnerText);
+            HtmlNode bandPage = GetBandPage(args);
+            GetBandMembers(bandPage);
             Console.ReadKey();
         }
     }
