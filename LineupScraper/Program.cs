@@ -50,9 +50,22 @@ namespace LineupScraper
                 i++;
             }
 
-            Console.Write("Please select a band: ");
-            int choice = Convert.ToInt32(Console.ReadLine()) - 1;
-            HtmlNode bandLink = bandList[choice].Element("a");
+            int choice = 0;
+            HtmlNode bandLink;
+            do
+            {
+                Console.Write("Please select a band: ");
+                try
+                {
+                    choice = Convert.ToInt32(Console.ReadLine()) - 1;
+                }
+                catch (Exception e)
+                {
+                    continue;
+                }
+            } while (choice < 0 || choice >= bandList.Count);
+
+            bandLink = bandList[choice].Element("a");
             return LoadPage(bandLink.GetAttributeValue("href", ""));
         }
 
