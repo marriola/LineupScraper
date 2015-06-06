@@ -32,7 +32,18 @@ namespace LineupScraper
 
         public void SetEndYear(string year)
         {
-            endYear = year.Equals("?") ? int.MaxValue : Convert.ToInt32(year);
+            if (year.Equals("?"))
+            {
+                endYear = int.MaxValue;
+            }
+            else if (year.ToLower().Equals("present"))
+            {
+                endYear = DateTime.Today.Year;
+            }
+            else
+            {
+                endYear = Convert.ToInt32(year);
+            }
         }
 
         public string ToString()
@@ -122,7 +133,8 @@ namespace LineupScraper
             ROLE,
             NEWROLE,
             STARTYEAR,
-            ENDYEAR
+            ENDYEAR,
+            NEWYEAR
         };
 
         private static readonly State[,] transitionTable =
@@ -131,14 +143,24 @@ namespace LineupScraper
 /* START     */ {State.START,     State.START,     State.START,     State.START,     State.ROLE,    State.ROLE},
 /* ROLE      */ {State.ROLE,      State.NEWROLE,   State.STARTYEAR, State.ROLE,      State.ROLE,    State.ROLE},
 /* NEWROLE   */ {State.NEWROLE,   State.NEWROLE,   State.NEWROLE,   State.NEWROLE,   State.NEWROLE, State.ROLE},
-/* STARTYEAR */ {State.STARTYEAR, State.STARTYEAR, State.STARTYEAR, State.STARTYEAR, State.ENDYEAR, State.STARTYEAR},
-/* ENDYEAR   */ {State.ENDYEAR,   State.STARTYEAR, State.ENDYEAR,   State.START,     State.ENDYEAR, State.ENDYEAR}
+/* STARTYEAR */ {State.STARTYEAR, State.NEWYEAR,   State.STARTYEAR, State.STARTYEAR, State.ENDYEAR, State.STARTYEAR},
+/* ENDYEAR   */ {State.ENDYEAR,   State.NEWYEAR,   State.ENDYEAR,   State.START,     State.ENDYEAR, State.ENDYEAR},
+/* NEWYEAR   */ {State.NEWYEAR,   State.NEWYEAR,   State.NEWYEAR,   State.START,     State.NEWYEAR, State.STARTYEAR}
         };
 
         private static State AdvanceParser(State state, char c)
         {
             int transitionIndex = alphabet.Contains(c) ? alphabet.IndexOf(c) : alphabet.Length;
             return transitionTable[(int)state, transitionIndex];
+        }
+
+        private static string TrimToken(string token, Func<char, bool> predicate)
+        {
+            while (token.Length > 0 && predicate(token.Last()))
+            {
+                token = token.Substring(0, token.Length - 1);
+            }
+            return token;
         }
 
         private static List<RoleInterval> ParseRoles(string roleString)
@@ -161,21 +183,26 @@ namespace LineupScraper
                 // stuff at the end.
                 if (state != State.ROLE && lastState == State.ROLE)
                 {
-                    while (!Char.IsLetterOrDigit(currentToken.Last()))
-                    {
-                        currentToken = currentToken.Substring(0, currentToken.Length - 1);
-                    }
-
+                    currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
                     if (currentToken.Length > 0)
                     {
                         roleList.Add(currentToken);
                         currentToken = "";
                     }
                 }
-
+                    
                 // Make sure the next role token doesn't start with a space.
-                else if (state == State.NEWROLE)
+                else if (state == State.NEWROLE || state == State.NEWYEAR)
                 {
+                    currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
+                    if (lastState == State.STARTYEAR)
+                    {
+                        yearIntervalList.Add(new YearInterval(currentToken));
+                    }
+                    else if (lastState == State.ENDYEAR)
+                    {
+                        yearIntervalList.Last().SetEndYear(currentToken);
+                    }
                     currentToken = "";
                 }
 
@@ -184,10 +211,7 @@ namespace LineupScraper
                 else if (state == State.ENDYEAR && lastState == State.STARTYEAR)
                 {
                     // chop off non-digits from the start year if present
-                    if (!Char.IsDigit(currentToken.Last()))
-                    {
-                        currentToken = currentToken.Substring(0, currentToken.Length - 1);
-                    }
+                    currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
                     yearIntervalList.Add(new YearInterval(currentToken));
                     currentToken = "";
                 }
@@ -199,10 +223,7 @@ namespace LineupScraper
                     if (lastState == State.ENDYEAR)
                     {
                         // chop off non-digits from the end year if present
-                        if (!Char.IsDigit(currentToken.Last()))
-                        {
-                            currentToken = currentToken.Substring(0, currentToken.Length - 1);
-                        }
+                        currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
                         yearIntervalList.Last().SetEndYear(currentToken);
                     }
                     currentToken = "";

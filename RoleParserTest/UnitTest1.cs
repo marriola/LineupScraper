@@ -13,6 +13,9 @@ namespace RoleParserTest
         {
             BandMember member = new BandMember("John Doe", "Guitar, vocals (1992-2015)");
             Assert.AreEqual("John Doe: Guitar, vocals (1992-2015)", member.ToString());
+
+            member = new BandMember("Jane Doe", "Bass (1992-1995, 2003-present)");
+            Assert.AreEqual("Jane Doe: Bass (1992-1995, 2003-2015)", member.ToString());
         }
     }
 }
