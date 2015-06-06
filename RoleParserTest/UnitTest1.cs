@@ -14,13 +14,13 @@ namespace RoleParserTest
             BandMember member = new BandMember("John Doe", "Guitar, vocals (1992-2015)");
 
             // Section 0: role 0
-            Assert.AreEqual(member.roles[0].roles[0], "Guitar");
+            Assert.AreEqual(member.sections[0].roles[0], "Guitar");
             // Section 0: role 1
-            Assert.AreEqual(member.roles[0].roles[1], "vocals");
+            Assert.AreEqual(member.sections[0].roles[1], "vocals");
             // Section 0: range 0: start year
-            Assert.AreEqual(member.roles[0].years[0].startYear, 1992);
+            Assert.AreEqual(member.sections[0].years[0].startYear, 1992);
             // Section 0: range 0: end year
-            Assert.AreEqual(member.roles[0].years[0].endYear, DateTime.Today.Year);
+            Assert.AreEqual(member.sections[0].years[0].endYear, DateTime.Today.Year);
         }
 
         [TestMethod]
@@ -34,29 +34,29 @@ namespace RoleParserTest
             BandMember member = new BandMember("Jane Doe", "Bass (1992-1995, 2003-present), drums (1995-2003)");
 
             // Section 0: role 0
-            Assert.AreEqual(member.roles[0].roles[0], "Bass");
+            Assert.AreEqual(member.sections[0].roles[0], "Bass");
             // Section 0: range 0: start year
-            Assert.AreEqual(member.roles[0].years[0].startYear, 1992);
+            Assert.AreEqual(member.sections[0].years[0].startYear, 1992);
             // Section 0: range 0: end year
-            Assert.AreEqual(member.roles[0].years[0].endYear, 1995);
+            Assert.AreEqual(member.sections[0].years[0].endYear, 1995);
             // Section 0: range 1: start year
-            Assert.AreEqual(member.roles[0].years[1].startYear, 2003);
+            Assert.AreEqual(member.sections[0].years[1].startYear, 2003);
             // Section 0: range 1: end year
-            Assert.AreEqual(member.roles[0].years[1].endYear, DateTime.Today.Year);
+            Assert.AreEqual(member.sections[0].years[1].endYear, DateTime.Today.Year);
 
             // Section 1: role 0
-            Assert.AreEqual(member.roles[1].roles[0], "drums");
+            Assert.AreEqual(member.sections[1].roles[0], "drums");
             // Section 1: range 0: start year
-            Assert.AreEqual(member.roles[1].years[0].startYear, 1995);
+            Assert.AreEqual(member.sections[1].years[0].startYear, 1995);
             // Section 1: range 0: end year
-            Assert.AreEqual(member.roles[1].years[0].endYear, 2003);
+            Assert.AreEqual(member.sections[1].years[0].endYear, 2003);
         }
 
         [TestMethod]
         public void TestRoleWithParens()
         {
             BandMember member = new BandMember("James Hetfield", "Guitar (rhythm) (1981-present)");
-            Assert.AreEqual("Guitar (rhythm)", member.roles[0].roles[0]);
+            Assert.AreEqual("Guitar (rhythm)", member.sections[0].roles[0]);
         }
     }
 }

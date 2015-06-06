@@ -102,7 +102,7 @@ namespace LineupScraper
             private set;
         }
 
-        public List<RoleInterval> roles
+        public List<RoleInterval> sections
         {
             get;
             private set;
@@ -111,12 +111,12 @@ namespace LineupScraper
         public BandMember(string name, string roleString)
         {
             this.name = name;
-            this.roles = ParseRoles(roleString);
+            this.sections = ParseRoles(roleString);
         }
 
         public override string ToString()
         {
-            return name + ": " + string.Join(", ", Array.ConvertAll(roles.ToArray(), x => x.ToString()));
+            return name + ": " + string.Join(", ", Array.ConvertAll(sections.ToArray(), x => x.ToString()));
         }
 
         /**
