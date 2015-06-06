@@ -113,12 +113,14 @@ namespace LineupScraper
             }
             
             HtmlNodeCollection bandMembers = bandMembersTab.SelectNodes("descendant::tr[@class='lineupRow']");
-            foreach (HtmlNode member in bandMembers)
+            foreach (HtmlNode memberEntry in bandMembers)
             {
-                HtmlNodeCollection columns = member.SelectNodes("descendant::td");
+                HtmlNodeCollection columns = memberEntry.SelectNodes("descendant::td");
                 string memberName = WebUtility.HtmlDecode(columns[0].Element("a").InnerText);
                 string memberRole = WebUtility.HtmlDecode(columns[1].InnerText.Trim());
-                Console.WriteLine("{0} // {1}", memberName, memberRole);
+                Console.WriteLine("<<{0} // {1}>>", memberName, memberRole);
+                BandMember member = new BandMember(memberName, memberRole);
+                Console.WriteLine(member.ToString());
             }
             return null;
         }

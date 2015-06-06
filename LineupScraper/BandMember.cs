@@ -22,7 +22,7 @@ namespace LineupScraper
         public int endYear
         {
             get;
-            private set;
+            set;
         }
 
         public void SetStartYear(string year)
@@ -32,7 +32,11 @@ namespace LineupScraper
 
         public void SetEndYear(string year)
         {
-            if (year.Equals("?"))
+            if (year.Length == 0)
+            {
+                endYear = startYear;
+            }
+            else if (year.Equals("?"))
             {
                 endYear = int.MaxValue;
             }
@@ -53,10 +57,10 @@ namespace LineupScraper
             return startYearString + "-" + endYearString;
         }
 
-        public YearInterval(string startYear, string endYear = "?")
+        public YearInterval(string startYear)
         {
             SetStartYear(startYear);
-            SetEndYear(endYear);
+            this.endYear = this.startYear;
         }
     }
 
@@ -188,7 +192,7 @@ namespace LineupScraper
                 // Make sure that the stuff in parentheses is actually a year
                 // and not an instrument specifier, e.g. guitar (lead) or
                 // vocals (backing).
-                if (state == State.STARTYEAR && Char.IsLetter(roleString[i + 1]))
+                if (i < roleString.Length - 1 && state == State.STARTYEAR && Char.IsLetter(roleString[i + 1]))
                 {
                     state = State.ROLE;
                 }
@@ -218,8 +222,8 @@ namespace LineupScraper
                     else if (lastState == State.ENDYEAR)
                     {
                         yearIntervalList.Last().SetEndYear(currentToken);
-                        currentToken = "";
                     }
+                    currentToken = "";
                 }
 
                 // STARTYEAR -> ENDYEAR
