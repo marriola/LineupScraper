@@ -173,8 +173,9 @@ namespace LineupScraper
             State state = AdvanceParser(State.START, roleString[0]);
             State lastState = State.START;
 
-            foreach (char c in roleString.Substring(1))
+            for (int i = 1; i < roleString.Length; i++)
             {
+                char c = roleString[i];
                 lastState = state;
                 state = AdvanceParser(state, c);
                 // This check keeps us from including delimiters in between tokens.
@@ -183,19 +184,28 @@ namespace LineupScraper
                     currentToken += c;
                 }
 
+                // ROLE -> STARTYEAR
+                // Make sure that the stuff in parentheses is actually a year
+                // and not an instrument specifier, e.g. guitar (lead) or
+                // vocals (backing).
+                if (state == State.STARTYEAR && Char.IsLetter(roleString[i + 1]))
+                {
+                    state = State.ROLE;
+                }
+                
                 // ROLE -> NEWROLE
                 // Save this token as the current role, minus any non-alphanumeric
                 // stuff at the end.
-                if (state != State.ROLE && lastState == State.ROLE)
+                else if (state != State.ROLE && lastState == State.ROLE)
                 {
-                    currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
+                    currentToken = currentToken.Substring(0, currentToken.Length - 1).Trim();
                     if (currentToken.Length > 0)
                     {
                         roleList.Add(currentToken);
                         currentToken = "";
                     }
                 }
-                    
+
                 // STARTYEAR or ENDYEAR -> NEWYEAR
                 // Save the year token before starting the next.
                 else if (state == State.NEWYEAR)
