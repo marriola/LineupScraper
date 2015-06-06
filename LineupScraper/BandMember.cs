@@ -196,9 +196,9 @@ namespace LineupScraper
                     }
                 }
                     
-                // If we're parsing more than one, make sure the next role or
-                // year token doesn't start with a space.
-                else if (state == State.NEWROLE || state == State.NEWYEAR)
+                // STARTYEAR or ENDYEAR -> NEWYEAR
+                // Save the year token before starting the next.
+                else if (state == State.NEWYEAR)
                 {
                     currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
                     if (lastState == State.STARTYEAR)
