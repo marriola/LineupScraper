@@ -46,7 +46,7 @@ namespace LineupScraper
             }
         }
 
-        public string ToString()
+        public override string ToString()
         {
             string startYearString = startYear == int.MinValue ? "?" : Convert.ToString(startYear);
             string endYearString = endYear == int.MaxValue ? "?" : Convert.ToString(endYear);
@@ -82,6 +82,16 @@ namespace LineupScraper
             this.roles = roles;
             this.years = years;
         }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(string.Join(", ", roles));
+            builder.Append(" (");
+            builder.Append(string.Join(", ", Array.ConvertAll(years, x => x.ToString())));
+            builder.Append(")");
+            return builder.ToString();
+        }
     }
 
     public class BandMember
@@ -104,18 +114,9 @@ namespace LineupScraper
             this.roles = ParseRoles(roleString);
         }
 
-        public string ToString()
+        public override string ToString()
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append(name + ": ");
-            foreach (RoleInterval rolePair in roles)
-            {
-                builder.Append(string.Join(", ", rolePair.roles));
-                builder.Append(" (");
-                builder.Append(string.Join(", ", Array.ConvertAll(rolePair.years, x => x.ToString())));
-                builder.Append(")");
-            }
-            return builder.ToString();
+            return name + ": " + string.Join(", ", Array.ConvertAll(roles.ToArray(), x => x.ToString()));
         }
 
         /**
@@ -170,13 +171,17 @@ namespace LineupScraper
             List<YearInterval> yearIntervalList = new List<YearInterval>();
             string currentToken = "" + roleString[0];
             State state = AdvanceParser(State.START, roleString[0]);
-            State lastState;
+            State lastState = State.START;
 
             foreach (char c in roleString.Substring(1))
             {
-                currentToken += c;
                 lastState = state;
                 state = AdvanceParser(state, c);
+                // This check keeps us from including delimiters in between tokens.
+                if (state != lastState || (state != State.START && state != State.NEWROLE && state != State.NEWYEAR))
+                {
+                    currentToken += c;
+                }
 
                 // ROLE -> NEWROLE
                 // Save this token as the current role, minus any non-alphanumeric
@@ -191,7 +196,8 @@ namespace LineupScraper
                     }
                 }
                     
-                // Make sure the next role token doesn't start with a space.
+                // If we're parsing more than one, make sure the next role or
+                // year token doesn't start with a space.
                 else if (state == State.NEWROLE || state == State.NEWYEAR)
                 {
                     currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
@@ -202,8 +208,8 @@ namespace LineupScraper
                     else if (lastState == State.ENDYEAR)
                     {
                         yearIntervalList.Last().SetEndYear(currentToken);
+                        currentToken = "";
                     }
-                    currentToken = "";
                 }
 
                 // STARTYEAR -> ENDYEAR
