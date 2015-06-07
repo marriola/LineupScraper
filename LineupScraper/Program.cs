@@ -109,25 +109,28 @@ namespace LineupScraper
             return root;
         }
 
-        static HtmlNodeCollection GetBandMembers(HtmlNode bandPage)
+        static List<BandMember> GetBandMembers(HtmlNode bandPage)
         {
             HtmlNode bandMembersTab = bandPage.SelectSingleNode("//div[@id='band_tab_members_all']");
             if (bandMembersTab == null)
             {
-                throw new Exception("Missing band_tab_members_all div.");
+                bandMembersTab = bandPage.SelectSingleNode("//div[@id='band_tab_members_current']");
+                if (bandMembersTab == null)
+                {
+                    throw new Exception("Can't find band members.");
+                }
             }
-            
-            HtmlNodeCollection bandMembers = bandMembersTab.SelectNodes("descendant::tr[@class='lineupRow']");
-            foreach (HtmlNode memberEntry in bandMembers)
+
+            List<BandMember> bandMembers = new List<BandMember>();
+            HtmlNodeCollection bandMemberNodes = bandMembersTab.SelectNodes("descendant::tr[@class='lineupRow']");
+            foreach (HtmlNode memberEntry in bandMemberNodes)
             {
                 HtmlNodeCollection columns = memberEntry.SelectNodes("descendant::td");
                 string memberName = WebUtility.HtmlDecode(columns[0].Element("a").InnerText);
                 string memberRole = WebUtility.HtmlDecode(columns[1].InnerText).Trim();
-                //Console.WriteLine("<< {0} // {1} >>", memberName, memberRole);
-                BandMember member = new BandMember(memberName, memberRole);
-                Console.WriteLine(member.ToString());
+                bandMembers.Add(new BandMember(memberName, memberRole));
             }
-            return null;
+            return bandMembers;
         }
 
         static void Main(string[] args)
@@ -135,9 +138,13 @@ namespace LineupScraper
             try
             {
                 HtmlNode bandPage = GetBandPage(args);
-                GetBandMembers(bandPage);
+                List<BandMember> bandMembers = GetBandMembers(bandPage);
+                foreach (BandMember member in bandMembers)
+                {
+                    Console.WriteLine(member.ToString());
+                }
             }
-            catch (PageLoadException e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
