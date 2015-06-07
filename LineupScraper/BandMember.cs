@@ -148,7 +148,7 @@ namespace LineupScraper
 /* START     */ {State.START,     State.START,     State.START,     State.START,     State.ROLE,    State.ROLE},
 /* ROLE      */ {State.ROLE,      State.NEWROLE,   State.STARTYEAR, State.ROLE,      State.ROLE,    State.ROLE},
 /* NEWROLE   */ {State.NEWROLE,   State.NEWROLE,   State.NEWROLE,   State.NEWROLE,   State.NEWROLE, State.ROLE},
-/* STARTYEAR */ {State.STARTYEAR, State.NEWYEAR,   State.STARTYEAR, State.STARTYEAR, State.ENDYEAR, State.STARTYEAR},
+/* STARTYEAR */ {State.STARTYEAR, State.NEWYEAR,   State.STARTYEAR, State.START,     State.ENDYEAR, State.STARTYEAR},
 /* ENDYEAR   */ {State.ENDYEAR,   State.NEWYEAR,   State.ENDYEAR,   State.START,     State.ENDYEAR, State.ENDYEAR},
 /* NEWYEAR   */ {State.NEWYEAR,   State.NEWYEAR,   State.NEWYEAR,   State.START,     State.NEWYEAR, State.STARTYEAR}
         };
@@ -240,7 +240,13 @@ namespace LineupScraper
                 // Done parsing this role-year pair.
                 else if (state == State.START && (lastState == State.STARTYEAR || lastState == State.ENDYEAR))
                 {
-                    if (lastState == State.ENDYEAR)
+                    if (lastState == State.STARTYEAR)
+                    {
+                        // chop off non-digits from the end year if present
+                        currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
+                        yearIntervalList.Add(new YearInterval(currentToken));
+                    }
+                    else if (lastState == State.ENDYEAR)
                     {
                         // chop off non-digits from the end year if present
                         currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));

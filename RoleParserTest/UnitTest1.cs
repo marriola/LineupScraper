@@ -29,8 +29,7 @@ namespace RoleParserTest
             // A year range ending in "present" is just replaced with the
             // current year, since for the purposes of generating a lineup
             // chart it doesn't really matter if the member stopped that year
-            // or not. BandMember.ToString's only purpose is for testing that
-            // the information was parsed correctly.
+            // or not.
             BandMember member = new BandMember("Jane Doe", "Bass (1992-1995, 2003-present), drums (1995-2003)");
 
             // Section 0: role 0

@@ -45,7 +45,12 @@ namespace LineupScraper
             HtmlNodeCollection bandList = disambiguation.Element("ul").SelectNodes("descendant::li");
             for (int i = 0; i < bandList.Count; i++)
             {
-                Console.WriteLine("{0}) {1}", i + 1, bandList[i].InnerText.Trim());
+                Console.Write("{0})", i + 1);
+                foreach (HtmlNode node in bandList[i].ChildNodes)
+                {
+                    Console.Write(node.InnerText.Trim() + " ");
+                }
+                Console.WriteLine();
             }
 
             int choice = 0;
@@ -117,8 +122,8 @@ namespace LineupScraper
             {
                 HtmlNodeCollection columns = memberEntry.SelectNodes("descendant::td");
                 string memberName = WebUtility.HtmlDecode(columns[0].Element("a").InnerText);
-                string memberRole = WebUtility.HtmlDecode(columns[1].InnerText.Trim());
-                Console.WriteLine("<<{0} // {1}>>", memberName, memberRole);
+                string memberRole = WebUtility.HtmlDecode(columns[1].InnerText).Trim();
+                //Console.WriteLine("<< {0} // {1} >>", memberName, memberRole);
                 BandMember member = new BandMember(memberName, memberRole);
                 Console.WriteLine(member.ToString());
             }
