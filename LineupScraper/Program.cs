@@ -81,19 +81,8 @@ namespace LineupScraper
          * @param args  Command line arguments
          * @return      The root node of the band's Metal Archives entry
          */
-        static HtmlNode GetBandPage(string[] args)
+        static HtmlNode GetBandPage(string bandName)
         {
-            string bandName;
-            if (args.Length == 0)
-            {
-                Console.Write("Band name? ");
-                bandName = Console.ReadLine();
-            }
-            else
-            {
-                bandName = args[0];
-            }
-
             // Retrieve the band page and check whether this is a disambiguation page.
             HtmlNode root = LoadPage("http://www.metal-archives.com/bands/" + bandName);
             HtmlNode content = root.SelectSingleNode("//div[@id='content_wrapper']");
@@ -111,14 +100,12 @@ namespace LineupScraper
 
         static List<BandMember> GetBandMembers(HtmlNode bandPage)
         {
-            HtmlNode bandMembersTab = bandPage.SelectSingleNode("//div[@id='band_tab_members_all']");
+            const string allMembers = "//div[@id='band_tab_members_all']";
+            const string currentMembers = "//div[@id='band_tab_members_current']";
+            HtmlNode bandMembersTab = bandPage.SelectSingleNode(allMembers) ?? bandPage.SelectSingleNode(currentMembers);
             if (bandMembersTab == null)
             {
-                bandMembersTab = bandPage.SelectSingleNode("//div[@id='band_tab_members_current']");
-                if (bandMembersTab == null)
-                {
-                    throw new Exception("Can't find band members.");
-                }
+                throw new Exception("Can't find band members.");
             }
 
             List<BandMember> bandMembers = new List<BandMember>();
@@ -135,14 +122,23 @@ namespace LineupScraper
 
         static void Main(string[] args)
         {
+            string bandName;
+            if (args.Length == 0)
+            {
+                Console.Write("Band name? ");
+                bandName = Console.ReadLine();
+            }
+            else
+            {
+                bandName = args[0];
+            }
+
             try
             {
-                HtmlNode bandPage = GetBandPage(args);
-                List<BandMember> bandMembers = GetBandMembers(bandPage);
-                foreach (BandMember member in bandMembers)
-                {
-                    Console.WriteLine(member.ToString());
-                }
+                HtmlNode bandPage = GetBandPage(bandName);
+                List<BandMember> band = GetBandMembers(bandPage);
+                Timeline timeline = new Timeline(band);
+                timeline.Save();
             }
             catch (Exception e)
             {
