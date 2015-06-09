@@ -145,7 +145,7 @@ namespace LineupScraper
                 new FixedBlockWidthVisualizer(bandName, timeline).Save();
                 Console.WriteLine("Done.");
             }
-            catch (Exception e)
+            catch (PageLoadException e)
             {
                 Console.WriteLine(e.Message);
             }
