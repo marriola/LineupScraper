@@ -142,7 +142,7 @@ namespace LineupScraper
                 Timeline timeline = new Timeline(band);
 
                 Console.WriteLine("Generating timeline...");
-                FixedBlockWidthVisualizer.Save(bandName, timeline);
+                new FixedBlockWidthVisualizer(bandName, timeline).Save();
                 Console.WriteLine("Done.");
             }
             catch (Exception e)

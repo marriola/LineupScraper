@@ -7,17 +7,24 @@ using System.Threading.Tasks;
 
 namespace LineupScraper
 {
-    class TimelineVisualizer
+    abstract class TimelineVisualizer
     {
-        protected static readonly Color[] palette =
+        public static readonly Color[] palette =
             { Color.Blue, Color.Crimson, Color.Green, Color.Purple, Color.DarkMagenta,
               Color.Teal, Color.Goldenrod, Color.OrangeRed, Color.DodgerBlue,
               Color.Chocolate };
 
         public static readonly int MAX_ROLES = palette.Length;
 
-        public static void Save(string bandName, Timeline timeline)
+        protected string bandName;
+        protected Timeline timeline;
+
+        public TimelineVisualizer(string bandName, Timeline timeline)
         {
+            this.bandName = bandName;
+            this.timeline = timeline;
         }
+        
+        public abstract void Save();
     }
 }

@@ -74,9 +74,19 @@ namespace LineupScraper
                         roleTag = Timeline.INDETERMINATE_END_YEAR;
                     }
 
-                    for (int year = startYear; year <= endYear; year++)
+                    // If a role has only a start year, it takes that entire block.
+                    // Otheriwse, it only goes up to the end year, but not into it.
+                    if (startYear == endYear)
                     {
-                        years[year - bandStartYear] = roleSum + roleTag;
+                        years[startYear - bandStartYear] = roleSum + roleTag;
+                    }
+                    else
+                    {
+
+                        for (int year = startYear; year < endYear; year++)
+                        {
+                            years[year - bandStartYear] = roleSum + roleTag;
+                        }
                     }
                 }
             }

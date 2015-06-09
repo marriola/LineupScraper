@@ -12,6 +12,11 @@ namespace LineupScraper
     {
         private static int ROW_WIDTH = TimelineRow.DEFAULT_HEIGHT;
 
+        public FixedBlockWidthVisualizer(string bandName, Timeline timeline)
+            : base(bandName, timeline)
+        {
+        }
+
         private static void drawBlock(int rowHeight, int roles, Graphics g, int x, int y)
         {
             if (roles == 0)
@@ -41,7 +46,7 @@ namespace LineupScraper
         /**
          * Generates a PNG of the timeline chart.
          */
-        public static new void Save(string bandName, Timeline timeline)
+        public override void Save()
         {
             int labelsWidth = timeline.band.Aggregate(0, (max, member) =>
                 Math.Max(max, member.name.Length * 8));
@@ -53,6 +58,8 @@ namespace LineupScraper
             Font labelFont = new Font("Arial", 11);
             Brush labelBrush = new SolidBrush(Color.Black);
             Brush shadeBrush = new SolidBrush(Color.Gainsboro);
+            Brush yearGrid = new SolidBrush(Color.LightGray);
+            Pen yearGridPen = new Pen(yearGrid);
 
             g.Clear(Color.White);
 
@@ -61,6 +68,7 @@ namespace LineupScraper
             foreach (TimelineRow row in timeline.chart)
             {
                 int rowHeight = row.height + TimelineRow.ROW_GAP;
+
                 if (shadeRow)
                 {
                     g.FillRectangle(shadeBrush, 0, y, chartWidth, rowHeight);
@@ -69,7 +77,13 @@ namespace LineupScraper
                 g.DrawString(row.name, labelFont, labelBrush, 5, y + 3);
                 for (int col = 0; col < row.years.Length; col++)
                 {
-                    drawBlock(row.height, row.years[col], g, labelsWidth + col * TimelineRow.DEFAULT_HEIGHT, y + 8);
+                    int blockX = labelsWidth + col * TimelineRow.DEFAULT_HEIGHT;
+                    if (col % 5 == 0)
+                    {
+                        // Draw a guideline every five years
+                        g.DrawLine(yearGridPen, blockX, y, blockX, y + rowHeight);
+                    }
+                    drawBlock(row.height, row.years[col], g, blockX, y + 8);
                 }
 
                 y += rowHeight;
