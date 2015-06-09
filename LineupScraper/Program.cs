@@ -137,8 +137,13 @@ namespace LineupScraper
             {
                 HtmlNode bandPage = GetBandPage(bandName);
                 List<BandMember> band = GetBandMembers(bandPage);
+
+                Console.WriteLine("Parsing...");
                 Timeline timeline = new Timeline(band);
-                timeline.Save();
+
+                Console.WriteLine("Generating timeline...");
+                FixedBlockWidthVisualizer.Save(bandName, timeline);
+                Console.WriteLine("Done.");
             }
             catch (Exception e)
             {

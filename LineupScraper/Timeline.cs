@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,8 +17,10 @@ namespace LineupScraper
      */
     class TimelineRow
     {
-        private const int STRIP_HEIGHT = 3;
-        private const int DEFAULT_HEIGHT_IN_STRIPS = 5;
+        public const int STRIP_HEIGHT = 5;
+        public const int DEFAULT_HEIGHT_IN_STRIPS = 2;
+        public const int DEFAULT_HEIGHT = DEFAULT_HEIGHT_IN_STRIPS * STRIP_HEIGHT;
+        public const int ROW_GAP = 15;
 
         public string name
         {
@@ -42,8 +42,9 @@ namespace LineupScraper
 
         public TimelineRow(BandMember member, int bandStartYear, int bandEndYear, Dictionary<string, int> roles)
         {
+            name = member.name;
             HashSet<string> rolesUsed = new HashSet<string>();
-            height = STRIP_HEIGHT * DEFAULT_HEIGHT_IN_STRIPS;
+            height = DEFAULT_HEIGHT;
             years = new int[bandEndYear - bandStartYear + 1];
 
             foreach (RoleInterval section in member.sections)
@@ -94,8 +95,35 @@ namespace LineupScraper
         public const int INDETERMINATE_START_YEAR = 0x20000000;
         public const int INDETERMINATE_END_YEAR = 0x40000000;
 
-        private List<TimelineRow> timelineChart;
-        private List<BandMember> band;
+        public int startYear
+        {
+            get;
+            private set;
+        }
+
+        public int endYear
+        {
+            get;
+            private set;
+        }
+
+        public List<TimelineRow> chart
+        {
+            get;
+            private set;
+        }
+
+        public List<BandMember> band
+        {
+            get;
+            private set;
+        }
+
+        public Dictionary<string, int> roles
+        {
+            get;
+            private set;
+        }
 
         public Timeline(List<BandMember> band)
         {
@@ -144,7 +172,7 @@ namespace LineupScraper
                     {
                         if (!roles.ContainsKey(role))
                         {
-                            if (numRoles == 29)
+                            if (numRoles == TimelineVisualizer.MAX_ROLES)
                             {
                                 throw new Exception("Too many roles!");
                             }
@@ -157,22 +185,20 @@ namespace LineupScraper
             return roles;
         }
 
+        /**
+         * Builds the timeline chart.
+         */
         private void Build()
         {
-            int startYear = FilterYears(true);
-            int endYear = FilterYears(false);
-            Dictionary<string, int> roles = GetRoles();
-            timelineChart = new List<TimelineRow>();
+            startYear = FilterYears(true);
+            endYear = FilterYears(false);
+            roles = GetRoles();
+            chart = new List<TimelineRow>();
             foreach (BandMember member in band)
             {
-                timelineChart.Add(new TimelineRow(member, startYear, endYear, roles));
+                chart.Add(new TimelineRow(member, startYear, endYear, roles));
             }
         }
 
-        public void Save()
-        {
-            int rowHeightSum = timelineChart.Aggregate(0, (accumulator, row) => accumulator + row.height);
-            Bitmap chartBitmap = new Bitmap(640, rowHeightSum);
-        }
     }
 }
