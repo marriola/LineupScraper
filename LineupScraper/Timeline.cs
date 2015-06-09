@@ -156,7 +156,9 @@ namespace LineupScraper
                     foreach (YearInterval role in section.years)
                     {
                         int compareYear = firstOrLast ? role.startYear : role.endYear;
-                        if ((firstOrLast && compareYear < year) ||
+                        if (compareYear != int.MinValue &&
+                            compareYear != int.MaxValue &&
+                            (firstOrLast && compareYear < year) ||
                             (!firstOrLast && compareYear > year))
                         {
                             year = compareYear;
