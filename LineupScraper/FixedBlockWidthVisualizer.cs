@@ -19,9 +19,25 @@ namespace LineupScraper
         {
         }
 
-        private Bitmap DrawLegend()
+        private Bitmap DrawLegend(int chartWidth, Font labelFont, Brush labelBrush)
         {
-            Bitmap legend = new Bitmap(0, 0);
+            Bitmap legend = new Bitmap(chartWidth, timeline.roles.Count * 20);
+            Graphics g = Graphics.FromImage(legend);
+            int y = 0;
+            double log2 = Math.Log10(2);
+            // Not sure what's going on here, but the labels look bolded if I don't do this.
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+
+            foreach (string role in timeline.roles.Keys)
+            {
+                int rowHeight = (int)g.MeasureString(role, labelFont).Height;
+                int paletteIndex = (int)(Math.Log10(timeline.roles[role]) / log2);
+                Brush brush = new SolidBrush(palette[paletteIndex - 1]);
+                g.FillRectangle(brush, PADDING, y + PADDING, TimelineRow.DEFAULT_HEIGHT, TimelineRow.DEFAULT_HEIGHT);
+                g.DrawString(role, labelFont, labelBrush, TimelineRow.DEFAULT_HEIGHT + (PADDING * 2), y);
+                y += rowHeight;
+            }
+            g.Dispose();
             return legend;
         }
 
@@ -83,10 +99,13 @@ namespace LineupScraper
 
             int rowHeightSum = timeline.chart.Aggregate(0, (accumulator, row) => accumulator + row.height + TimelineRow.ROW_GAP);
             int chartWidth = labelsWidth + (PADDING * 3) + (timeline.endYear - timeline.startYear + 1) * ROW_WIDTH;
-            Bitmap chartBitmap = new Bitmap(chartWidth, rowHeightSum + 20);
+            Bitmap legend = DrawLegend(chartWidth, labelFont, labelBrush);
+
+            Bitmap chartBitmap = new Bitmap(chartWidth, rowHeightSum + 20 + legend.Height);
             Graphics g = Graphics.FromImage(chartBitmap);
 
             g.Clear(Color.White);
+            g.DrawImage(legend, 0, rowHeightSum + 20);
 
             // Draw the chart.
             int y = 0;
