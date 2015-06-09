@@ -231,7 +231,7 @@ namespace LineupScraper
                 else if (state == State.ENDYEAR && lastState == State.STARTYEAR)
                 {
                     // chop off non-digits from the start year if present
-                    currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
+                    currentToken = TrimToken(currentToken, x => !(x == '?' || Char.IsLetterOrDigit(x)));
                     yearIntervalList.Add(new YearInterval(currentToken));
                     currentToken = "";
                 }
