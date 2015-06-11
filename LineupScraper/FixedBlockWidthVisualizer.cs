@@ -58,6 +58,7 @@ namespace LineupScraper
                     }
 
                     int stripHeight = row.height / roleColors.Count;
+                    int stripOffset = 0;
                     foreach (Color color in roleColors)
                     {
                         Brush brush;
@@ -71,11 +72,10 @@ namespace LineupScraper
                             brush = new SolidBrush(color);
                         }
 
-                        g.FillRectangle(brush, new Rectangle(x, y, ROW_WIDTH, stripHeight));
-                        y += stripHeight;
+                        g.FillRectangle(brush, new Rectangle(x, y + stripOffset, ROW_WIDTH, stripHeight));
+                        stripOffset += stripHeight;
                         brush.Dispose();
                     }
-                    y -= row.height;
                 }
                 x += TimelineRow.DEFAULT_HEIGHT;
             }
