@@ -25,8 +25,7 @@ namespace LineupScraper
             Graphics g = Graphics.FromImage(legend);
             int y = 0;
             double log2 = Math.Log10(2);
-            // Not sure what's going on here, but the labels look bolded if I don't do this.
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+            g.Clear(Color.White);
 
             foreach (string role in timeline.roles.Keys)
             {
@@ -42,40 +41,43 @@ namespace LineupScraper
             return legend;
         }
 
-        private static void DrawBlock(int rowHeight, int roles, Graphics g, int x, int y)
+        private static void DrawRow(TimelineRow row, Graphics g, int x, int y)
         {
-            if (roles == 0)
+            foreach (int roles in row.years)
             {
-                return;
-            }
-
-            // Build up a list of the colors present in this block.
-            List<Color> roleColors = new List<Color>();
-            for (int i = 1; i < MAX_ROLES; i++)
-            {
-                if ((roles & (int)Math.Pow(2, i)) != 0)
+                if (roles != 0)
                 {
-                    roleColors.Add(palette[i - 1]);
-                }
-            }
+                    // Build up a list of the colors present in this block.
+                    List<Color> roleColors = new List<Color>();
+                    for (int i = 1; i < MAX_ROLES; i++)
+                    {
+                        if ((roles & (int)Math.Pow(2, i)) != 0)
+                        {
+                            roleColors.Add(palette[i - 1]);
+                        }
+                    }
 
-            int stripHeight = rowHeight / roleColors.Count;
-            foreach (Color color in roleColors)
-            {
-                Brush brush;
-                if ((roles & Timeline.INDETERMINATE_END_YEAR) != 0 ||
-                    (roles & Timeline.INDETERMINATE_START_YEAR) != 0)
-                {
-                    brush = new HatchBrush(HatchStyle.WideDownwardDiagonal, color, Color.Transparent);
-                }
-                else
-                {
-                    brush = new SolidBrush(color);
-                }
+                    int stripHeight = row.height / roleColors.Count;
+                    foreach (Color color in roleColors)
+                    {
+                        Brush brush;
+                        if ((roles & Timeline.INDETERMINATE_END_YEAR) != 0 ||
+                            (roles & Timeline.INDETERMINATE_START_YEAR) != 0)
+                        {
+                            brush = new HatchBrush(HatchStyle.WideDownwardDiagonal, color, Color.Transparent);
+                        }
+                        else
+                        {
+                            brush = new SolidBrush(color);
+                        }
 
-                g.FillRectangle(brush, new Rectangle(x, y, ROW_WIDTH, stripHeight));
-                y += stripHeight;
-                brush.Dispose();
+                        g.FillRectangle(brush, new Rectangle(x, y, ROW_WIDTH, stripHeight));
+                        y += stripHeight;
+                        brush.Dispose();
+                    }
+                    y -= row.height;
+                }
+                x += TimelineRow.DEFAULT_HEIGHT;
             }
         }
 
@@ -97,25 +99,26 @@ namespace LineupScraper
             Pen yearGridLight = new Pen(new SolidBrush(Color.LightGray));
             Pen yearGridDark = new Pen(new SolidBrush(Color.Gray));
 
-            // Draw the chart.
+            // Draw the timeline.
             int y = 0;
             bool shadeRow = true;
+            g.Clear(Color.White);
             foreach (TimelineRow row in timeline.chart)
             {
                 int rowHeight = row.height + TimelineRow.ROW_GAP;
-
                 if (shadeRow)
                 {
                     g.FillRectangle(shadeBrush, 0, y, chartWidth, rowHeight);
                 }
 
-                g.DrawString(row.name, labelFont, labelBrush, PADDING, (float)Math.Ceiling(y + (float)PADDING / 2));
-                for (int col = 0; col < row.years.Length; col++)
+                // Draw name labels, guidelines, and timeline row.
+                g.DrawString(row.name, labelFont, labelBrush, PADDING, (int)Math.Ceiling(y + (float)PADDING / 2));
+                for (int i = 0; i < row.years.Length; i++)
                 {
-                    int blockX = labelsWidth + col * TimelineRow.DEFAULT_HEIGHT;
-                    g.DrawLine(col % 5 == 0 ? yearGridDark : yearGridLight, blockX, y, blockX, y + rowHeight);
-                    DrawBlock(row.height, row.years[col], g, blockX, y + 8);
+                    int blockX = labelsWidth + i * TimelineRow.DEFAULT_HEIGHT;
+                    g.DrawLine(i % 5 == 0 ? yearGridDark : yearGridLight, blockX, y, blockX, y + rowHeight);
                 }
+                DrawRow(row, g, labelsWidth, y + 8);
 
                 y += rowHeight;
                 shadeRow = !shadeRow;
@@ -148,6 +151,7 @@ namespace LineupScraper
 
             Bitmap chart = new Bitmap(timelineChart.Width, timelineChart.Height + 20 + legend.Height);
             Graphics g = Graphics.FromImage(chart);
+            g.Clear(Color.White);
             g.DrawImage(timelineChart, 0, 0);
             g.DrawImage(legend, 0, timelineChart.Height + 20);
 
