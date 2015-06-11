@@ -37,11 +37,12 @@ namespace LineupScraper
                 g.DrawString(role, labelFont, labelBrush, TimelineRow.DEFAULT_HEIGHT + (PADDING * 2), y);
                 y += rowHeight;
             }
+
             g.Dispose();
             return legend;
         }
 
-        private static void drawBlock(int rowHeight, int roles, Graphics g, int x, int y)
+        private static void DrawBlock(int rowHeight, int roles, Graphics g, int x, int y)
         {
             if (roles == 0)
             {
@@ -65,7 +66,7 @@ namespace LineupScraper
                 if ((roles & Timeline.INDETERMINATE_END_YEAR) != 0 ||
                     (roles & Timeline.INDETERMINATE_START_YEAR) != 0)
                 {
-                    brush = new HatchBrush(HatchStyle.WideDownwardDiagonal, color, Color.LightGray);
+                    brush = new HatchBrush(HatchStyle.WideDownwardDiagonal, color, Color.Transparent);
                 }
                 else
                 {
@@ -78,17 +79,8 @@ namespace LineupScraper
             }
         }
 
-        /**
-         * Generates a PNG of the timeline chart.
-         */
-        public override void Save()
+        public Bitmap DrawChart(Font labelFont, Brush labelBrush)
         {
-            Font labelFont = new Font("Arial", 11);
-            Brush labelBrush = new SolidBrush(Color.Black);
-            Brush shadeBrush = new SolidBrush(Color.Gainsboro);
-            Pen yearGridLight = new Pen(new SolidBrush(Color.LightGray));
-            Pen yearGridDark = new Pen(new SolidBrush(Color.Gray));
-
             // Compute longest band member name label.
             Bitmap throwawayBitmap = new Bitmap(1, 1);
             Graphics throwawayGraphics = Graphics.FromImage(throwawayBitmap);
@@ -99,13 +91,11 @@ namespace LineupScraper
 
             int rowHeightSum = timeline.chart.Aggregate(0, (accumulator, row) => accumulator + row.height + TimelineRow.ROW_GAP);
             int chartWidth = labelsWidth + (PADDING * 3) + (timeline.endYear - timeline.startYear + 1) * ROW_WIDTH;
-            Bitmap legend = DrawLegend(chartWidth, labelFont, labelBrush);
-
-            Bitmap chartBitmap = new Bitmap(chartWidth, rowHeightSum + 20 + legend.Height);
-            Graphics g = Graphics.FromImage(chartBitmap);
-
-            g.Clear(Color.White);
-            g.DrawImage(legend, 0, rowHeightSum + 20);
+            Bitmap chart = new Bitmap(chartWidth, rowHeightSum + 20);
+            Graphics g = Graphics.FromImage(chart);
+            Brush shadeBrush = new SolidBrush(Color.Gainsboro);
+            Pen yearGridLight = new Pen(new SolidBrush(Color.LightGray));
+            Pen yearGridDark = new Pen(new SolidBrush(Color.Gray));
 
             // Draw the chart.
             int y = 0;
@@ -124,7 +114,7 @@ namespace LineupScraper
                 {
                     int blockX = labelsWidth + col * TimelineRow.DEFAULT_HEIGHT;
                     g.DrawLine(col % 5 == 0 ? yearGridDark : yearGridLight, blockX, y, blockX, y + rowHeight);
-                    drawBlock(row.height, row.years[col], g, blockX, y + 8);
+                    DrawBlock(row.height, row.years[col], g, blockX, y + 8);
                 }
 
                 y += rowHeight;
@@ -141,12 +131,33 @@ namespace LineupScraper
                 x += 5 * TimelineRow.DEFAULT_HEIGHT;
             }
 
-            chartBitmap.Save(bandName + ".png", ImageFormat.Png);
-            chartBitmap.Dispose();
+            shadeBrush.Dispose();
             g.Dispose();
+            return chart;
+        }
+        
+        /**
+         * Generates a PNG of the timeline chart.
+         */
+        public override void Save()
+        {
+            Font labelFont = new Font("Arial", 11);
+            Brush labelBrush = new SolidBrush(Color.Black);
+            Bitmap timelineChart = DrawChart(labelFont, labelBrush);
+            Bitmap legend = DrawLegend(timelineChart.Width, labelFont, labelBrush);
+
+            Bitmap chart = new Bitmap(timelineChart.Width, timelineChart.Height + 20 + legend.Height);
+            Graphics g = Graphics.FromImage(chart);
+            g.DrawImage(timelineChart, 0, 0);
+            g.DrawImage(legend, 0, timelineChart.Height + 20);
+
+            chart.Save(bandName + ".png", ImageFormat.Png);
+            g.Dispose();
+            timelineChart.Dispose();
+            legend.Dispose();
+            chart.Dispose();
             labelFont.Dispose();
             labelBrush.Dispose();
-            shadeBrush.Dispose();
         }
     }
 }
