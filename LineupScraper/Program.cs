@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using HtmlAgilityPack;
@@ -98,11 +99,50 @@ namespace LineupScraper
             return root;
         }
 
+        /**
+         * Returns the first and last years that the band was active from the
+         * band's page.
+         */
+        static int[] GetBandYears(HtmlNode bandPage)
+        {
+            int[] bandYears = new int[2] { 1970, DateTime.Today.Year };
+            string startYear = "";
+            string endYear = "";
+            int tryYear;
+            bool firstMatch = true;
+
+            HtmlNode bandStatsDiv = bandPage.SelectSingleNode("//div[@id='band_stats']");
+            HtmlNode bandYearsDd = bandStatsDiv.SelectSingleNode("descendant::dl[@class='clear']").Element("dd");
+            Regex r = new Regex("(?<start>[0-9]+)(-(?<end>[0-9]+|present))?(\\(*?\\))?(,\\s*)?");
+            Match match = r.Match(bandYearsDd.InnerText.Trim());
+
+            while (match.Success)
+            {
+                if (firstMatch)
+                {
+                    startYear = match.Groups["start"].Value;
+                    if (int.TryParse(startYear, out tryYear))
+                    {
+                        bandYears[0] = tryYear;
+                    }
+                }
+                endYear = match.Groups["end"].Value;
+                match = match.NextMatch();
+                firstMatch = false;
+            }
+
+            if (int.TryParse(endYear, out tryYear))
+            {
+                bandYears[1] = tryYear;
+            }
+            return bandYears;
+        }
+
         static List<BandMember> GetBandMembers(HtmlNode bandPage)
         {
-            const string allMembers = "//div[@id='band_tab_members_all']";
-            const string currentMembers = "//div[@id='band_tab_members_current']";
-            HtmlNode bandMembersTab = bandPage.SelectSingleNode(allMembers) ?? bandPage.SelectSingleNode(currentMembers);
+            const string allMembersSelector = "//div[@id='band_tab_members_all']";
+            const string currentMembersSelector = "//div[@id='band_tab_members_current']";
+            HtmlNode bandMembersTab = bandPage.SelectSingleNode(allMembersSelector) ?? bandPage.SelectSingleNode(currentMembersSelector);
             if (bandMembersTab == null)
             {
                 throw new Exception("Can't find band members.");
@@ -136,19 +176,27 @@ namespace LineupScraper
             try
             {
                 HtmlNode bandPage = GetBandPage(bandName);
-                List<BandMember> band = GetBandMembers(bandPage);
 
                 Console.WriteLine("Parsing...");
-                Timeline timeline = new Timeline(band);
+                int[] bandYears = GetBandYears(bandPage);
+                List<BandMember> band = GetBandMembers(bandPage);
 
                 Console.WriteLine("Generating timeline...");
+                Timeline timeline = new Timeline(bandYears[0], bandYears[1], band);
                 new FixedBlockWidthVisualizer(bandName, timeline).Save();
+
                 Console.WriteLine("Done.");
             }
             catch (PageLoadException e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.ToString());
             }
+#if !DEBUG
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+#endif
             Console.ReadKey();
         }
     }

@@ -135,38 +135,12 @@ namespace LineupScraper
             private set;
         }
 
-        public Timeline(List<BandMember> band)
+        public Timeline(int startYear, int endYear, List<BandMember> band)
         {
+            this.startYear = startYear;
+            this.endYear = endYear;
             this.band = band;
             Build();
-        }
-
-        /**
-         * Iterates through each band member's roles, returning either the
-         * earliest start year (firstOrlast = true) or the latest end year
-         * (firstOrLast = false).
-         */
-        private int FilterYears(bool firstOrLast)
-        {
-            int year = firstOrLast ? int.MaxValue : int.MinValue;
-            foreach (BandMember member in band)
-            {
-                foreach (RoleInterval section in member.sections)
-                {
-                    foreach (YearInterval role in section.years)
-                    {
-                        int compareYear = firstOrLast ? role.startYear : role.endYear;
-                        if (compareYear != int.MinValue &&
-                            compareYear != int.MaxValue &&
-                            (firstOrLast && compareYear < year) ||
-                            (!firstOrLast && compareYear > year))
-                        {
-                            year = compareYear;
-                        }
-                    }
-                }
-            }
-            return year;
         }
 
         /**
@@ -202,8 +176,6 @@ namespace LineupScraper
          */
         private void Build()
         {
-            startYear = FilterYears(true);
-            endYear = FilterYears(false);
             roles = GetRoles();
             chart = new List<TimelineRow>();
             foreach (BandMember member in band)
