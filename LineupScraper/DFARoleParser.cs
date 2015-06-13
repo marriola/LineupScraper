@@ -9,6 +9,8 @@ namespace LineupScraper
     class DFARoleParser
     {
         private string roleString;
+        private int startYear;
+        private int endYear;
 
         public List<RoleInterval> sections
         {
@@ -16,9 +18,11 @@ namespace LineupScraper
             private set;
         }
 
-        public DFARoleParser(string roleString)
+        public DFARoleParser(string roleString, int startYear, int endYear)
         {
             this.roleString = roleString;
+            this.startYear = startYear;
+            this.endYear = endYear;
         }
 
         /**
@@ -136,7 +140,7 @@ namespace LineupScraper
 
                 // STARTYEAR or ENDYEAR -> START
                 // Done parsing this role-year pair.
-                else if (state == State.START && (lastState == State.STARTYEAR || lastState == State.ENDYEAR))
+                else if (i == roleString.Length - 1 || state == State.START && (lastState == State.STARTYEAR || lastState == State.ENDYEAR))
                 {
                     if (lastState == State.STARTYEAR)
                     {
@@ -150,11 +154,18 @@ namespace LineupScraper
                         currentToken = TrimToken(currentToken, x => !Char.IsLetterOrDigit(x));
                         yearIntervalList.Last().SetEndYear(currentToken);
                     }
-                    currentToken = "";
 
-                    rolePairs.Add(new RoleInterval(roleList.ToArray(), yearIntervalList.ToArray()));
+                    if (yearIntervalList.Count == 0)
+                    {
+                        // No years given, just use start and end years for band.
+                        roleList.Add(currentToken);
+                        yearIntervalList.Add(new YearInterval(startYear, endYear));
+                    }
+
+                    rolePairs.Add(new RoleInterval(roleList.ToArray(), yearIntervalList.ToArray(), startYear, endYear));
                     roleList = new List<string>();
                     yearIntervalList = new List<YearInterval>();
+                    currentToken = "";
                 }
             }
 

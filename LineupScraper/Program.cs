@@ -113,7 +113,7 @@ namespace LineupScraper
 
             HtmlNode bandStatsDiv = bandPage.SelectSingleNode("//div[@id='band_stats']");
             HtmlNode bandYearsDd = bandStatsDiv.SelectSingleNode("descendant::dl[@class='clear']").Element("dd");
-            Regex r = new Regex("(?<start>[0-9]+)(-(?<end>[0-9]+|present))?(\\(*?\\))?(,\\s*)?");
+            Regex r = new Regex("(?<start>\\d+)(-(?<end>\\d+|present))?(\\(*?\\))?(,\\s*)?");
             Match match = r.Match(bandYearsDd.InnerText.Trim());
 
             while (match.Success)
@@ -138,7 +138,7 @@ namespace LineupScraper
             return bandYears;
         }
 
-        static List<BandMember> GetBandMembers(HtmlNode bandPage)
+        static List<BandMember> GetBandMembers(HtmlNode bandPage, int[] bandYears)
         {
             const string allMembersSelector = "//div[@id='band_tab_members_all']";
             const string currentMembersSelector = "//div[@id='band_tab_members_current']";
@@ -155,7 +155,7 @@ namespace LineupScraper
                 HtmlNodeCollection columns = memberEntry.SelectNodes("descendant::td");
                 string memberName = WebUtility.HtmlDecode(columns[0].Element("a").InnerText);
                 string memberRole = WebUtility.HtmlDecode(columns[1].InnerText).Trim();
-                bandMembers.Add(new BandMember(memberName, memberRole));
+                bandMembers.Add(new BandMember(memberName, memberRole, bandYears[0], bandYears[1]));
             }
             return bandMembers;
         }
@@ -179,7 +179,7 @@ namespace LineupScraper
 
                 Console.WriteLine("Parsing...");
                 int[] bandYears = GetBandYears(bandPage);
-                List<BandMember> band = GetBandMembers(bandPage);
+                List<BandMember> band = GetBandMembers(bandPage, bandYears);
 
                 Console.WriteLine("Generating timeline...");
                 Timeline timeline = new Timeline(bandYears[0], bandYears[1], band);

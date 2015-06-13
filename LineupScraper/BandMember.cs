@@ -62,6 +62,12 @@ namespace LineupScraper
             SetStartYear(startYear);
             this.endYear = this.startYear;
         }
+
+        public YearInterval(int startYear, int endYear)
+        {
+            this.startYear = startYear;
+            this.endYear = endYear;
+        }
     }
 
     /**
@@ -81,10 +87,18 @@ namespace LineupScraper
             private set;
         }
 
-        public RoleInterval(string[] roles, YearInterval[] years)
+        public RoleInterval(string[] roles, YearInterval[] years, int startYear, int endYear)
         {
             this.roles = roles;
-            this.years = years;
+            if (years.Length == 0)
+            {
+                this.years = new YearInterval[1];
+                this.years[0] = new YearInterval(startYear, endYear);
+            }
+            else
+            {
+                this.years = years;
+            }
         }
 
         public override string ToString()
@@ -112,10 +126,10 @@ namespace LineupScraper
             private set;
         }
 
-        public BandMember(string name, string roleString)
+        public BandMember(string name, string roleString, int startYear, int endYear)
         {
             this.name = name;
-            this.sections = new DFARoleParser(roleString).Parse();
+            this.sections = new DFARoleParser(roleString, startYear, endYear).Parse();
         }
 
         public override string ToString()

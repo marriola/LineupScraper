@@ -46,9 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BandMember.cs" />
+    <Compile Include="DFARoleParser.cs" />
     <Compile Include="FixedBlockWidthVisualizer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegexRoleParser.cs" />
     <Compile Include="Timeline.cs" />
     <Compile Include="TimelineVisualizer.cs" />
   </ItemGroup>

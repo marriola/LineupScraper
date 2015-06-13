@@ -11,7 +11,7 @@ namespace RoleParserTest
         [TestMethod]
         public void TestRoleParser()
         {
-            BandMember member = new BandMember("John Doe", "Guitar, vocals (1992-2015)");
+            BandMember member = new BandMember("John Doe", "Guitar, vocals (1992-2015)", 1992, 2015);
 
             // Section 0: role 0
             Assert.AreEqual(member.sections[0].roles[0], "Guitar");
@@ -30,7 +30,7 @@ namespace RoleParserTest
             // current year, since for the purposes of generating a lineup
             // chart it doesn't really matter if the member stopped that year
             // or not.
-            BandMember member = new BandMember("Jane Doe", "Bass (1992-1995, 2003-present), drums (1995-2003)");
+            BandMember member = new BandMember("Jane Doe", "Bass (1992-1995, 2003-present), drums (1995-2003)", 1992, 2015);
 
             // Section 0: role 0
             Assert.AreEqual(member.sections[0].roles[0], "Bass");
@@ -54,7 +54,7 @@ namespace RoleParserTest
         [TestMethod]
         public void TestRoleWithParens()
         {
-            BandMember member = new BandMember("James Hetfield", "Guitar (rhythm) (1981-present)");
+            BandMember member = new BandMember("James Hetfield", "Guitar (rhythm) (1981-present)", 1981, 2015);
             Assert.AreEqual("Guitar (rhythm)", member.sections[0].roles[0]);
         }
     }
