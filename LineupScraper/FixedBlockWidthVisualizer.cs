@@ -31,7 +31,7 @@ namespace LineupScraper
             {
                 int rowHeight = (int)g.MeasureString(role, labelFont).Height;
                 int paletteIndex = (int)(Math.Log10(timeline.roles[role]) / log2);
-                Brush brush = new SolidBrush(palette[paletteIndex - 1]);
+                Brush brush = solidPalette[paletteIndex - 1];
                 g.FillRectangle(brush, PADDING, y + PADDING, TimelineRow.DEFAULT_HEIGHT, TimelineRow.DEFAULT_HEIGHT);
                 g.DrawString(role, labelFont, labelBrush, TimelineRow.DEFAULT_HEIGHT + (PADDING * 2), y);
                 y += rowHeight;
@@ -41,40 +41,39 @@ namespace LineupScraper
             return legend;
         }
 
-        private static void DrawRow(TimelineRow row, Graphics g, int x, int y)
+        private void DrawRow(TimelineRow row, Graphics g, int x, int y)
         {
             foreach (int roles in row.years)
             {
                 if (roles != 0)
                 {
                     // Build up a list of the colors present in this block.
-                    List<Color> roleColors = new List<Color>();
+                    List<int> roleColors = new List<int>();
                     for (int i = 1; i < MAX_ROLES; i++)
                     {
                         if ((roles & (int)Math.Pow(2, i)) != 0)
                         {
-                            roleColors.Add(palette[i - 1]);
+                            roleColors.Add(i - 1);
                         }
                     }
 
                     int stripHeight = row.height / roleColors.Count;
                     int stripOffset = 0;
-                    foreach (Color color in roleColors)
+                    foreach (int color in roleColors)
                     {
                         Brush brush;
                         if ((roles & Timeline.INDETERMINATE_END_YEAR) != 0 ||
                             (roles & Timeline.INDETERMINATE_START_YEAR) != 0)
                         {
-                            brush = new HatchBrush(HatchStyle.WideDownwardDiagonal, color, Color.Transparent);
+                            brush = hatchPalette[color];
                         }
                         else
                         {
-                            brush = new SolidBrush(color);
+                            brush = solidPalette[color];
                         }
 
                         g.FillRectangle(brush, new Rectangle(x, y + stripOffset, ROW_WIDTH, stripHeight));
                         stripOffset += stripHeight;
-                        brush.Dispose();
                     }
                 }
                 x += TimelineRow.DEFAULT_HEIGHT;
@@ -92,7 +91,7 @@ namespace LineupScraper
             throwawayBitmap.Dispose();
 
             int rowHeightSum = timeline.chart.Aggregate(0, (accumulator, row) => accumulator + row.height + TimelineRow.ROW_GAP);
-            int chartWidth = labelsWidth + (PADDING * 3) + (timeline.endYear - timeline.startYear + 1) * ROW_WIDTH;
+            int chartWidth = labelsWidth + (timeline.endYear - timeline.startYear + 1) * ROW_WIDTH;
             Bitmap chart = new Bitmap(chartWidth, rowHeightSum + 20);
             Graphics g = Graphics.FromImage(chart);
             Brush shadeBrush = new SolidBrush(Color.Gainsboro);
