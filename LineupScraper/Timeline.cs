@@ -78,14 +78,14 @@ namespace LineupScraper
                     // Otheriwse, it only goes up to the end year, but not into it.
                     if (startYear == endYear)
                     {
-                        years[startYear - bandStartYear] = roleSum + roleTag;
+                        years[startYear - bandStartYear] |= roleTag | roleSum;
                     }
                     else
                     {
 
                         for (int year = startYear; year < endYear; year++)
                         {
-                            years[year - bandStartYear] = roleSum + roleTag;
+                            years[year - bandStartYear] |= roleTag | roleSum;
                         }
                     }
                 }
