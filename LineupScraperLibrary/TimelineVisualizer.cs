@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LineupScraper
+namespace LineupScraperLibrary
 {
-    abstract class TimelineVisualizer
+    public abstract class TimelineVisualizer
     {
         private static readonly Color[] palette =
             { Color.Blue, Color.Crimson, Color.Green, Color.DarkMagenta,
@@ -47,6 +47,8 @@ namespace LineupScraper
             }
         }
 
-        public abstract void Save();
+        public abstract Image Generate();
+
+        public abstract void Save(string filename="");
     }
 }

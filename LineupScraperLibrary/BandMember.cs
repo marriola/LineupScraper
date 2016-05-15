@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LineupScraper
+namespace LineupScraperLibrary
 {
     /**
      * A time interval for a band member's role. Unknown or missing start and

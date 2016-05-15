@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LineupScraper
+namespace LineupScraperLibrary
 {
     /**
      * A timeline row is represented as a name and an integer for each year
@@ -15,7 +15,7 @@ namespace LineupScraper
      * If either year is indeterminate (i.e. "?" was given for that part of
      * the range), one of the upper bits is set.
      */
-    class TimelineRow
+    public class TimelineRow
     {
         public const int STRIP_HEIGHT = 5;
         public const int DEFAULT_HEIGHT_IN_STRIPS = 2;
@@ -40,11 +40,19 @@ namespace LineupScraper
             private set;
         }
 
+        private static int HammingWeight(int i)
+        {
+            uint j = (uint)i;
+            j = j - ((j >> 1) & 0x55555555);
+            j = (j & 0x33333333) + ((j >> 2) & 0x33333333);
+            return (int)(((j + (j >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+        }
+
         public TimelineRow(BandMember member, int bandStartYear, int bandEndYear, Dictionary<string, int> roles)
         {
+            int maxRolesPerSquare = 2;
             name = member.name;
             HashSet<string> rolesUsed = new HashSet<string>();
-            height = DEFAULT_HEIGHT;
             years = new int[bandEndYear - bandStartYear + 1];
 
             foreach (RoleInterval section in member.sections)
@@ -52,7 +60,7 @@ namespace LineupScraper
                 int roleSum = section.roles.Aggregate(0,
                     (accumulator, role) =>
                     {
-                        rolesUsed.Add(role);
+                        //rolesUsed.Add(role);
                         return accumulator + roles[role];
                     });
 
@@ -78,29 +86,28 @@ namespace LineupScraper
                     // Otheriwse, it only goes up to the end year, but not into it.
                     if (startYear == endYear)
                     {
-                        years[startYear - bandStartYear] |= roleTag | roleSum;
+                        endYear++;
                     }
-                    else
+                    for (int year = startYear; year < endYear; year++)
                     {
-
-                        for (int year = startYear; year < endYear; year++)
-                        {
-                            years[year - bandStartYear] |= roleTag | roleSum;
-                        }
+                        years[year - bandStartYear] |= roleTag | roleSum;
+                        maxRolesPerSquare = Math.Max(HammingWeight(years[year - bandStartYear]), maxRolesPerSquare);
                     }
                 }
             }
 
-            // Increase the row height if we have more roles than will fit in
-            // the default row height.
-            if (rolesUsed.Count > DEFAULT_HEIGHT_IN_STRIPS)
-            {
-                height = rolesUsed.Count * STRIP_HEIGHT;
-            }
+            height = maxRolesPerSquare * STRIP_HEIGHT;
+
+            //// Increase the row height if we have more roles than will fit in
+            //// the default row height.
+            //if (rolesUsed.Count > DEFAULT_HEIGHT_IN_STRIPS)
+            //{
+            //    height = rolesUsed.Count * STRIP_HEIGHT;
+            //}
         }
     }
 
-    class Timeline
+    public class Timeline
     {
         public const int INDETERMINATE_START_YEAR = 0x20000000;
         public const int INDETERMINATE_END_YEAR = 0x40000000;

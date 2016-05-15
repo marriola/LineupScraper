@@ -7,12 +7,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LineupScraper
+namespace LineupScraperLibrary
 {
-    class FixedBlockWidthVisualizer : TimelineVisualizer
+    public class FixedBlockWidthVisualizer : TimelineVisualizer
     {
-        private const int PADDING = 5;
-        private const int ROW_WIDTH = TimelineRow.DEFAULT_HEIGHT;
+        const int PADDING = 5;
+
+        const int ROW_WIDTH = TimelineRow.DEFAULT_HEIGHT;
+
+        static readonly Dictionary<string, ImageFormat> extensionToFormat = new Dictionary<string, ImageFormat>
+        {
+            { "png", ImageFormat.Png },
+            { "bmp", ImageFormat.Bmp },
+            { "jpg", ImageFormat.Jpeg },
+            { "gif", ImageFormat.Gif },
+            { "tiff", ImageFormat.Tiff }
+        };
+
 
         public FixedBlockWidthVisualizer(string bandName, Timeline timeline)
             : base(bandName, timeline)
@@ -137,11 +148,8 @@ namespace LineupScraper
             g.Dispose();
             return chart;
         }
-        
-        /**
-         * Generates a PNG of the timeline chart.
-         */
-        public override void Save()
+
+        public override Image Generate()
         {
             Font labelFont = new Font("Arial", 11);
             Brush labelBrush = new SolidBrush(Color.Black);
@@ -154,13 +162,38 @@ namespace LineupScraper
             g.DrawImage(timelineChart, 0, 0);
             g.DrawImage(legend, 0, timelineChart.Height + 20);
 
-            chart.Save(bandName + ".png", ImageFormat.Png);
             g.Dispose();
             timelineChart.Dispose();
             legend.Dispose();
-            chart.Dispose();
             labelFont.Dispose();
             labelBrush.Dispose();
+
+            return chart;
+        }
+
+        /**
+         * Generates a PNG of the timeline chart.
+         */
+        public override void Save(string filename=null)
+        {
+            if (string.IsNullOrWhiteSpace(filename))
+            {
+                filename = bandName + ".png";
+            }
+
+            var chart = Generate();
+            ImageFormat format = ImageFormat.Png;
+
+            var fileparts = filename.Split('.');
+            var ext = fileparts[fileparts.Length - 1].ToLower();
+            if (!extensionToFormat.ContainsKey(ext))
+            {
+                throw new Exception("Invalid file extension");
+            }
+
+            format = extensionToFormat[ext];
+
+            chart.Save(filename, format);
         }
     }
 }
