@@ -70,16 +70,16 @@ namespace LineupScraper
                 {
                     LineupScraperLibrary.LineupScraper.Save(bandPageUrl);
                 }
+                catch (PageLoadException e)
+                {
+                    Console.WriteLine(e.Message);
+                }
 #if !DEBUG
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
 #endif
-                catch (PageLoadException e)
-                {
-                    Console.WriteLine(e.Message);
-                }
             }
 
             Console.WriteLine("Saved");
