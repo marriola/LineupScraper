@@ -9,9 +9,12 @@ namespace LineupScraperLibrary
 {
     public class PageLoadException : Exception
     {
-        public PageLoadException(string url, HttpStatusCode code)
-            : base("Page load failed: " + code.ToString())
+        public HttpStatusCode StatusCode { get; private set; }
+
+        public PageLoadException(string url, HttpStatusCode statusCode)
+            : base(statusCode.ToString())
         {
+            StatusCode = statusCode;
         }
     }
 }

@@ -24,7 +24,6 @@ namespace LineupScraperLibrary
             { "tiff", ImageFormat.Tiff }
         };
 
-
         public FixedBlockWidthVisualizer(string bandName, Timeline timeline)
             : base(bandName, timeline)
         {
@@ -32,16 +31,16 @@ namespace LineupScraperLibrary
 
         private Bitmap DrawLegend(int chartWidth, Font labelFont, Brush labelBrush)
         {
-            Bitmap legend = new Bitmap(chartWidth, timeline.roles.Count * 20);
+            Bitmap legend = new Bitmap(chartWidth, Timeline.roles.Count * 20);
             Graphics g = Graphics.FromImage(legend);
             int y = 0;
             double log2 = Math.Log10(2);
             g.Clear(Color.White);
 
-            foreach (string role in timeline.roles.Keys)
+            foreach (string role in Timeline.roles.Keys)
             {
                 int rowHeight = (int)g.MeasureString(role, labelFont).Height;
-                int paletteIndex = (int)(Math.Log10(timeline.roles[role]) / log2);
+                int paletteIndex = (int)(Math.Log10(Timeline.roles[role]) / log2);
                 Brush brush = solidPalette[paletteIndex - 1];
                 g.FillRectangle(brush, PADDING, y + PADDING, TimelineRow.DEFAULT_HEIGHT, TimelineRow.DEFAULT_HEIGHT);
                 g.DrawString(role, labelFont, labelBrush, TimelineRow.DEFAULT_HEIGHT + (PADDING * 2), y);
@@ -96,13 +95,13 @@ namespace LineupScraperLibrary
             // Compute longest band member name label.
             Bitmap throwawayBitmap = new Bitmap(1, 1);
             Graphics throwawayGraphics = Graphics.FromImage(throwawayBitmap);
-            int labelsWidth = PADDING + timeline.band.Aggregate(0, (max, member) =>
+            int labelsWidth = PADDING + Timeline.band.Aggregate(0, (max, member) =>
                 Math.Max(max, (int)throwawayGraphics.MeasureString(member.name, labelFont).Width));
             throwawayGraphics.Dispose();
             throwawayBitmap.Dispose();
 
-            int rowHeightSum = timeline.chart.Aggregate(0, (accumulator, row) => accumulator + row.height + TimelineRow.ROW_GAP);
-            int chartWidth = labelsWidth + (timeline.endYear - timeline.startYear + 1) * ROW_WIDTH;
+            int rowHeightSum = Timeline.chart.Aggregate(0, (accumulator, row) => accumulator + row.height + TimelineRow.ROW_GAP);
+            int chartWidth = labelsWidth + (Timeline.endYear - Timeline.startYear + 1) * ROW_WIDTH;
             Bitmap chart = new Bitmap(chartWidth, rowHeightSum + 20);
             Graphics g = Graphics.FromImage(chart);
             Brush shadeBrush = new SolidBrush(Color.Gainsboro);
@@ -113,7 +112,7 @@ namespace LineupScraperLibrary
             int y = 0;
             bool shadeRow = true;
             g.Clear(Color.White);
-            foreach (TimelineRow row in timeline.chart)
+            foreach (TimelineRow row in Timeline.chart)
             {
                 int rowHeight = row.height + TimelineRow.ROW_GAP;
                 if (shadeRow)
@@ -136,7 +135,7 @@ namespace LineupScraperLibrary
 
             // Draw the year labels
             int x = labelsWidth;
-            for (int year = timeline.startYear; year <= timeline.endYear; year += 5)
+            for (int year = Timeline.startYear; year <= Timeline.endYear; year += 5)
             {
                 string yearString = Convert.ToString(year);
                 int width = (int)g.MeasureString(yearString, labelFont).Width;
@@ -174,13 +173,8 @@ namespace LineupScraperLibrary
         /**
          * Generates a PNG of the timeline chart.
          */
-        public override void Save(string filename=null)
+        public override void Save(string filename)
         {
-            if (string.IsNullOrWhiteSpace(filename))
-            {
-                filename = bandName + ".png";
-            }
-
             var chart = Generate();
             ImageFormat format = ImageFormat.Png;
 

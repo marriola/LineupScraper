@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using LineupScraperLibrary;
 
 namespace LineupScraper
@@ -34,6 +35,7 @@ namespace LineupScraper
             return string.Empty;
         }
 
+        [STAThread]
         static void Main(string[] args)
         {
             string bandName;
@@ -66,23 +68,43 @@ namespace LineupScraper
 
             if (!string.IsNullOrWhiteSpace(bandPageUrl))
             {
+                TimelineVisualizer timeline = null;
+
                 try
                 {
-                    LineupScraperLibrary.LineupScraper.Save(bandPageUrl);
+                    timeline = LineupScraperLibrary.LineupScraper.CreateVisualization(bandPageUrl);
                 }
                 catch (PageLoadException e)
                 {
                     Console.WriteLine(e.Message);
+                    return;
                 }
 #if !DEBUG
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+                    return;
                 }
 #endif
+
+                var saveFileDialog = new SaveFileDialog
+                {
+                    FileName = timeline.BandName + ".png",
+                    Filter = "PNG image (*.png)|*.png|JPEG image (*.jpg)|*.jpg|GIF image (*.gif)|*.gif|Bitmap (*.bmp)|*.bmp"
+                };
+
+                saveFileDialog.FileOk += (sender, e) =>
+                {
+                    if (saveFileDialog.FileName != string.Empty)
+                    {
+                        timeline.Save(saveFileDialog.FileName);
+                        Console.WriteLine("Saved!");
+                    }
+                };
+
+                saveFileDialog.ShowDialog();
             }
 
-            Console.WriteLine("Saved");
             Console.ReadKey();
         }
     }

@@ -10,24 +10,26 @@ namespace LineupScraperLibrary
 {
     public abstract class TimelineVisualizer
     {
-        private static readonly Color[] palette =
-            { Color.Blue, Color.Crimson, Color.Green, Color.DarkMagenta,
-              Color.Teal, Color.Goldenrod, Color.OrangeRed, Color.DodgerBlue,
-              Color.Chocolate, Color.LawnGreen, Color.Cyan, Color.DeepPink,
-              Color.LightBlue, Color.LightCoral, Color.Khaki, Color.Orchid };
+        public string BandName { get; protected set; }
+
+        protected Timeline Timeline { get; set; }
+
+        private static readonly Color[] palette = {
+            Color.Blue, Color.Crimson, Color.Green, Color.DarkMagenta,
+            Color.Teal, Color.Goldenrod, Color.OrangeRed, Color.DodgerBlue,
+            Color.Chocolate, Color.LawnGreen, Color.Cyan, Color.DeepPink,
+            Color.LightBlue, Color.LightCoral, Color.Khaki, Color.Orchid
+        };
 
         protected readonly SolidBrush[] solidPalette;
         protected readonly HatchBrush[] hatchPalette;
 
         public static readonly int MAX_ROLES = palette.Length;
 
-        protected string bandName;
-        protected Timeline timeline;
-
         public TimelineVisualizer(string bandName, Timeline timeline)
         {
-            this.bandName = bandName;
-            this.timeline = timeline;
+            BandName = bandName;
+            Timeline = timeline;
 
             solidPalette = new SolidBrush[palette.Length];
             hatchPalette = new HatchBrush[palette.Length];
@@ -49,6 +51,6 @@ namespace LineupScraperLibrary
 
         public abstract Image Generate();
 
-        public abstract void Save(string filename="");
+        public abstract void Save(string filename);
     }
 }
