@@ -98,14 +98,12 @@ namespace LineupScraper
                     if (saveFileDialog.FileName != string.Empty)
                     {
                         timeline.Save(saveFileDialog.FileName);
-                        Console.WriteLine("Saved!");
+                        System.Diagnostics.Process.Start(saveFileDialog.FileName);
                     }
                 };
 
                 saveFileDialog.ShowDialog();
             }
-
-            Console.ReadKey();
         }
     }
 }
